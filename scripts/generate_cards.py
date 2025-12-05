@@ -129,7 +129,42 @@ def slugify(text: str) -> str:
     return "-".join(filter(None, safe.split("-")))
 
 
-def compose_segments(card: Dict, deck_color: Tuple[int, int, int], default_color: Tuple[int, int, int]) -> List[Tuple[str, Tuple[int, int, int]]]:
+def tokenize_with_phonemes(
+    text: str,
+    phoneme_colors: Dict[str, str],
+    default_color: Tuple[int, int, int],
+) -> List[Tuple[str, Tuple[int, int, int]]]:
+    """Split text into segments, coloring configured phonemes and leaving others default."""
+    if not text:
+        return []
+    lower = text.lower()
+    # Sort phonemes longest-first to catch trigraphs before digraphs.
+    phonemes = sorted(phoneme_colors.keys(), key=len, reverse=True)
+    segments: List[Tuple[str, Tuple[int, int, int]]] = []
+    i = 0
+    while i < len(text):
+        matched = None
+        for phoneme in phonemes:
+            if lower.startswith(phoneme, i):
+                matched = phoneme
+                break
+        if matched:
+            color = parse_color(phoneme_colors[matched])
+            span = len(matched)
+            segments.append((text[i : i + span], color))
+            i += span
+        else:
+            segments.append((text[i], default_color))
+            i += 1
+    return segments
+
+
+def compose_segments(
+    card: Dict,
+    deck_color: Tuple[int, int, int],
+    default_color: Tuple[int, int, int],
+    phoneme_colors: Optional[Dict[str, str]] = None,
+) -> List[Tuple[str, Tuple[int, int, int]]]:
     raw_segments = card.get("segments")
     if raw_segments:
         segments: List[Tuple[str, Tuple[int, int, int]]] = []
@@ -139,6 +174,8 @@ def compose_segments(card: Dict, deck_color: Tuple[int, int, int], default_color
             segments.append((text, color))
         return segments
     text = card.get("text", "").strip()
+    if phoneme_colors:
+        return tokenize_with_phonemes(text, phoneme_colors, default_color)
     return [(text, default_color)]
 
 
@@ -147,6 +184,7 @@ def render_front(
     deck: Dict,
     card_spec: CardSpec,
     font_path: Path,
+    phoneme_colors: Optional[Dict[str, str]],
     with_bleed: bool,
 ) -> Image.Image:
     bleed = card_spec.bleed_px if with_bleed else 0
@@ -167,7 +205,12 @@ def render_front(
     safe_top = bleed + padding
     safe_bottom = bar_top - padding
 
-    segments = compose_segments(card, deck_color=bar_color, default_color=card_spec.text_color)
+    segments = compose_segments(
+        card,
+        deck_color=bar_color,
+        default_color=card_spec.text_color,
+        phoneme_colors=phoneme_colors,
+    )
     max_width = safe_right - safe_left
     max_height = safe_bottom - safe_top
     font = fit_font_size(draw, font_path, segments, max_width, max_height)
@@ -189,9 +232,13 @@ def render_back(
     width = card_spec.trim_width_px + bleed * 2
     height = card_spec.trim_height_px + bleed * 2
 
-    background = parse_color(deck["color"])
+    deck_color = parse_color(deck["color"])
+    background = (255, 255, 255)
     img = Image.new("RGB", (width, height), background)
     draw = ImageDraw.Draw(img)
+
+    # Light cross-hatch to save ink while keeping deck identity.
+    _draw_hatch(draw, width, height, color=deck_color)
 
     text = deck.get("back_text", deck["label"])
     padding = int(card_spec.trim_height_px * 0.1)
@@ -200,16 +247,42 @@ def render_back(
     safe_top = bleed + padding
     safe_bottom = height - bleed - padding
 
-    segments = [(text, (255, 255, 255))]
+    segments = [(text, deck_color)]
     max_width = safe_right - safe_left
     max_height = safe_bottom - safe_top
     font = fit_font_size(draw, font_path, segments, max_width, max_height)
     text_width, text_height = measure_segments(draw, font, segments)
     text_x = safe_left + (max_width - text_width) // 2
     text_y = safe_top + (max_height - text_height) // 2
+
+    # Add a white box behind the deck text for readability.
+    pad = int(card_spec.trim_height_px * 0.04)
+    bg_box = [
+        text_x - pad,
+        text_y - pad,
+        text_x + text_width + pad,
+        text_y + text_height + pad,
+    ]
+    draw.rectangle(bg_box, fill="white")
     draw_segments(draw, (text_x, text_y), font, segments)
 
     return img
+
+
+def _draw_hatch(draw: ImageDraw.ImageDraw, width: int, height: int, color: Tuple[int, int, int]) -> None:
+    """Draw a sparse diagonal hatch pattern to reduce ink coverage."""
+    spacing = max(8, min(width, height) // 20)  # adaptive spacing
+    thickness = 2
+    # Diagonal down-right
+    for offset in range(-height, width + height, spacing):
+        start = (offset, 0)
+        end = (offset + height, height)
+        draw.line([start, end], fill=color, width=thickness)
+    # Diagonal down-left
+    for offset in range(0, width + height, spacing):
+        start = (offset, 0)
+        end = (offset - height, height)
+        draw.line([start, end], fill=color, width=thickness)
 
 
 # ---------------------------
@@ -230,20 +303,59 @@ def render_sheet(
 ) -> List[Image.Image]:
     card_w, card_h = card_size
     per_page = page_spec.rows * page_spec.cols
+    grid_w = page_spec.cols * card_w + (page_spec.cols - 1) * page_spec.gutter_px
+    grid_h = page_spec.rows * card_h + (page_spec.rows - 1) * page_spec.gutter_px
+    offset_x = page_spec.margin_px + max(0, (page_spec.width_px - 2 * page_spec.margin_px - grid_w) // 2)
+    offset_y = page_spec.margin_px + max(0, (page_spec.height_px - 2 * page_spec.margin_px - grid_h) // 2)
     sheets: List[Image.Image] = []
     for page_images in chunk(images, per_page):
         sheet = Image.new("RGB", (page_spec.width_px, page_spec.height_px), "white")
+        draw = ImageDraw.Draw(sheet)
         for idx, img_path in enumerate(page_images):
             img = Image.open(img_path)
             row = idx // page_spec.cols
             col = idx % page_spec.cols
             if mirrored:
                 col = page_spec.cols - 1 - col
-            x = page_spec.margin_px + col * (card_w + page_spec.gutter_px)
-            y = page_spec.margin_px + row * (card_h + page_spec.gutter_px)
+            x = offset_x + col * (card_w + page_spec.gutter_px)
+            y = offset_y + row * (card_h + page_spec.gutter_px)
             sheet.paste(img, (x, y))
+        _draw_cut_lines(draw, page_spec, card_size, offset_x, offset_y)
         sheets.append(sheet)
     return sheets
+
+
+def _draw_cut_lines(
+    draw: ImageDraw.ImageDraw,
+    page_spec: PageSpec,
+    card_size: Tuple[int, int],
+    offset_x: int,
+    offset_y: int,
+) -> None:
+    """Draw light cut lines along card edges to guide trimming."""
+    card_w, card_h = card_size
+    x_edges = set()
+    y_edges = set()
+    for col in range(page_spec.cols):
+        x = offset_x + col * (card_w + page_spec.gutter_px)
+        x_edges.add(x)
+        x_edges.add(x + card_w)
+    for row in range(page_spec.rows):
+        y = offset_y + row * (card_h + page_spec.gutter_px)
+        y_edges.add(y)
+        y_edges.add(y + card_h)
+
+    min_x = min(x_edges, default=offset_x)
+    max_x = max(x_edges, default=page_spec.width_px - offset_x)
+    min_y = min(y_edges, default=offset_y)
+    max_y = max(y_edges, default=page_spec.height_px - offset_y)
+
+    line_color = "#B0B0B0"
+    line_width = 1
+    for x in sorted(x_edges):
+        draw.line([(x, min_y), (x, max_y)], fill=line_color, width=line_width)
+    for y in sorted(y_edges):
+        draw.line([(min_x, y), (max_x, y)], fill=line_color, width=line_width)
 
 
 def save_sheet_images_and_pdf(sheets: List[Image.Image], out_dir: Path, base_name: str) -> None:
@@ -255,6 +367,20 @@ def save_sheet_images_and_pdf(sheets: List[Image.Image], out_dir: Path, base_nam
         pdf_path = out_dir / f"{base_name}.pdf"
         rgb_sheets = [s.convert("RGB") for s in sheets]
         rgb_sheets[0].save(pdf_path, save_all=True, append_images=rgb_sheets[1:], resolution=300)
+
+
+def save_alternating_pdf(front_sheets: List[Image.Image], back_sheets: List[Image.Image], out_dir: Path, base_name: str) -> None:
+    """Save a single PDF with pages alternating front/back for print submission."""
+    out_dir.mkdir(parents=True, exist_ok=True)
+    if not front_sheets or not back_sheets:
+        return
+    count = min(len(front_sheets), len(back_sheets))
+    pages: List[Image.Image] = []
+    for i in range(count):
+        pages.append(front_sheets[i].convert("RGB"))
+        pages.append(back_sheets[i].convert("RGB"))
+    pdf_path = out_dir / f"{base_name}.pdf"
+    pages[0].save(pdf_path, save_all=True, append_images=pages[1:], resolution=300)
 
 
 # ---------------------------
@@ -303,8 +429,9 @@ def generate_deck(
     card_spec: CardSpec,
     page_spec: PageSpec,
     font_path: Path,
+    phoneme_colors: Optional[Dict[str, str]],
     out_root: Path,
-) -> None:
+) -> Tuple[List[Path], List[Path], List[Image.Image], List[Image.Image]]:
     deck_id = deck["id"]
     deck_dir = out_root / "cards" / deck_id
     deck_dir.mkdir(parents=True, exist_ok=True)
@@ -327,16 +454,18 @@ def generate_deck(
     back_bleed.save(back_bleed_path)
 
     front_paths: List[Path] = []
+    back_paths: List[Path] = []
     for idx, card in enumerate(deck["cards"], start=1):
         name = card.get("text") or "".join(seg["text"] for seg in card.get("segments", []))
         slug = slugify(name or f"{deck_id}-{idx}")
 
-        front_trim = render_front(card, deck, card_spec, font_path, with_bleed=False)
+        front_trim = render_front(card, deck, card_spec, font_path, phoneme_colors, with_bleed=False)
         front_trim_path = fronts_dir / f"{idx:03d}-{slug}.png"
         front_trim.save(front_trim_path)
         front_paths.append(front_trim_path)
+        back_paths.append(back_trim_path)
 
-        front_bleed = render_front(card, deck, card_spec, font_path, with_bleed=True)
+        front_bleed = render_front(card, deck, card_spec, font_path, phoneme_colors, with_bleed=True)
         front_bleed_path = publisher_fronts_dir / f"{idx:03d}-{slug}.png"
         front_bleed.save(front_bleed_path)
 
@@ -370,6 +499,11 @@ def generate_deck(
     )
     save_sheet_images_and_pdf(mirrored_back_sheets, print_dir / "back-mirrored", base_name="back-mirrored")
 
+    # Combined alternating PDF: front page 1, back page 1, etc. for easy print submission.
+    save_alternating_pdf(front_sheets, back_sheets, print_dir / "front-back", base_name="front-back")
+
+    return front_paths, back_paths, front_sheets, back_sheets
+
 
 def main() -> None:
     parser = argparse.ArgumentParser(
@@ -391,8 +525,40 @@ def main() -> None:
     font_path = ensure_font_path(config, repo_root)
     card_spec, page_spec = build_specs(config)
 
+    phoneme_colors = config.get("phoneme_colors", {})
+    all_front_sheets: List[Image.Image] = []
+    all_back_sheets: List[Image.Image] = []
+    all_card_fronts: List[Path] = []
+    all_card_backs: List[Path] = []
     for deck in config["decks"]:
-        generate_deck(deck, card_spec, page_spec, font_path, out_root=args.output)
+        front_paths, back_paths, front_sheets, back_sheets = generate_deck(
+            deck, card_spec, page_spec, font_path, phoneme_colors, out_root=args.output
+        )
+        all_front_sheets.extend(front_sheets)
+        all_back_sheets.extend(back_sheets)
+        all_card_fronts.extend(front_paths)
+        all_card_backs.extend(back_paths)
+
+    # Combined all-deck alternating PDF.
+    if all_card_fronts and all_card_backs:
+        combined_dir = args.output / "print_sheets" / "all-decks"
+        combined_front_sheets = render_sheet(
+            images=all_card_fronts,
+            card_size=(card_spec.trim_width_px, card_spec.trim_height_px),
+            page_spec=page_spec,
+            name="front",
+            mirrored=False,
+        )
+        combined_back_sheets = render_sheet(
+            images=all_card_backs,
+            card_size=(card_spec.trim_width_px, card_spec.trim_height_px),
+            page_spec=page_spec,
+            name="back",
+            mirrored=False,
+        )
+        save_sheet_images_and_pdf(combined_front_sheets, combined_dir / "front", base_name="front")
+        save_sheet_images_and_pdf(combined_back_sheets, combined_dir / "back", base_name="back")
+        save_alternating_pdf(combined_front_sheets, combined_back_sheets, combined_dir, base_name="all-front-back")
     print(f"Generated decks into {args.output.resolve()}")
 
 

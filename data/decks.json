@@ -19,6 +19,29 @@
   "font": {
     "path": "Lexend/static/Lexend-Bold.ttf"
   },
+  "phoneme_colors": {
+    "sh": "#D7263D",
+    "ch": "#7F95D1",
+    "th": "#F4B860",
+    "wh": "#2E86AB",
+    "ng": "#7FB069",
+    "ck": "#A64AC9",
+    "qu": "#FF7F50",
+    "ph": "#00897B",
+    "tch": "#C792EA",
+    "igh": "#6C5B7B",
+    "ar": "#E07A5F",
+    "or": "#F2C14E",
+    "er": "#3D5A80",
+    "ir": "#9C27B0",
+    "ur": "#006064",
+    "oo": "#8D6E63",
+    "ow": "#FF9F1C",
+    "ou": "#2EC4B6",
+    "oi": "#FF006E",
+    "oy": "#7F4F24",
+    "aw": "#C57B57"
+  },
   "decks": [
     {
       "id": "deck-1",
@@ -54,18 +77,14 @@
       "color": "#9B59B6",
       "back_text": "Deck 3",
       "cards": [
-        { "text": "mat" },
-        { "text": "sat" },
-        { "text": "sam" },
-        { "text": "rat" },
-        { "text": "ram" },
-        { "text": "fan" },
-        { "text": "tan" },
-        { "text": "ran" },
-        { "text": "man" },
-        { "text": "fat" },
-        { "text": "slam" },
-        { "text": "tram" }
+        { "text": "e" },
+        { "text": "h" },
+        { "text": "b" },
+        { "text": "k" },
+        { "text": "g" },
+        { "text": "v" },
+        { "text": "p" },
+        { "text": "d" }
       ]
     },
     {
@@ -74,18 +93,12 @@
       "color": "#7FB069",
       "back_text": "Deck 4",
       "cards": [
-        { "text": "h" },
-        { "text": "e" },
-        { "text": "b" },
-        { "text": "k" },
-        { "text": "g" },
-        { "text": "v" },
-        { "text": "p" },
-        { "text": "d" },
-        { "text": "beg" },
-        { "text": "rim" },
-        { "text": "wag" },
-        { "text": "jam" }
+        { "text": "u" },
+        { "text": "c" },
+        { "text": "y" },
+        { "text": "x" },
+        { "text": "z" },
+        { "text": "q" }
       ]
     },
     {
@@ -94,71 +107,154 @@
       "color": "#D7263D",
       "back_text": "Deck 5",
       "cards": [
+        { "text": "mat" },
+        { "text": "sat" },
+        { "text": "rat" },
+        { "text": "ram" },
+        { "text": "fan" },
+        { "text": "man" },
+        { "text": "pen" },
+        { "text": "peg" },
+        { "text": "pig" },
+        { "text": "pet" },
+        { "text": "pup" },
+        { "text": "cup" },
+        { "text": "cap" },
+        { "text": "can" },
+        { "text": "yak" },
+        { "text": "yet" },
+        { "text": "box" },
+        { "text": "mix" },
+        { "text": "zip" },
+        { "text": "zig" }
+      ]
+    },
+    {
+      "id": "deck-6",
+      "label": "Deck 6",
+      "color": "#F2C14E",
+      "back_text": "Deck 6",
+      "cards": [
         { "text": "sh" },
         { "text": "ch" },
         { "text": "th" },
         { "text": "wh" },
         { "text": "ng" },
-        {
-          "segments": [
-            { "text": "sh", "color": "#D7263D" },
-            { "text": "ip" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "sh", "color": "#D7263D" },
-            { "text": "op" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "ch", "color": "#D7263D" },
-            { "text": "op" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "ch", "color": "#D7263D" },
-            { "text": "at" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "th", "color": "#D7263D" },
-            { "text": "in" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "th", "color": "#D7263D" },
-            { "text": "at" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "wh", "color": "#D7263D" },
-            { "text": "ip" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "ri" },
-            { "text": "ng", "color": "#D7263D" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "sa" },
-            { "text": "ng", "color": "#D7263D" }
-          ]
-        },
-        {
-          "segments": [
-            { "text": "wi" },
-            { "text": "ng", "color": "#D7263D" }
-          ]
-        }
+        { "text": "ck" },
+        { "text": "qu" },
+        { "text": "ph" },
+        { "text": "tch" },
+        { "text": "ship" },
+        { "text": "shop" },
+        { "text": "shut" },
+        { "text": "chop" },
+        { "text": "chat" },
+        { "text": "lunch" },
+        { "text": "thin" },
+        { "text": "that" },
+        { "text": "bath" },
+        { "text": "when" },
+        { "text": "whip" },
+        { "text": "song" },
+        { "text": "ring" },
+        { "text": "long" },
+        { "text": "pack" },
+        { "text": "back" },
+        { "text": "duck" },
+        { "text": "quick" },
+        { "text": "quit" },
+        { "text": "quiz" },
+        { "text": "phone" },
+        { "text": "graph" },
+        { "text": "photo" },
+        { "text": "catch" },
+        { "text": "hatch" },
+        { "text": "match" }
+      ]
+    },
+    {
+      "id": "deck-7",
+      "label": "Deck 7",
+      "color": "#7F95D1",
+      "back_text": "Deck 7",
+      "cards": [
+        { "text": "ar" },
+        { "text": "or" },
+        { "text": "er" },
+        { "text": "ir" },
+        { "text": "ur" },
+        { "text": "oo" },
+        { "text": "ow" },
+        { "text": "ou" },
+        { "text": "oi" },
+        { "text": "oy" },
+        { "text": "aw" },
+        { "text": "igh" },
+        { "text": "car" },
+        { "text": "star" },
+        { "text": "farm" },
+        { "text": "for" },
+        { "text": "corn" },
+        { "text": "short" },
+        { "text": "her" },
+        { "text": "fern" },
+        { "text": "sister" },
+        { "text": "bird" },
+        { "text": "dirt" },
+        { "text": "stir" },
+        { "text": "turn" },
+        { "text": "hurt" },
+        { "text": "curl" },
+        { "text": "moon" },
+        { "text": "food" },
+        { "text": "book" },
+        { "text": "look" },
+        { "text": "cow" },
+        { "text": "now" },
+        { "text": "shout" },
+        { "text": "out" },
+        { "text": "coin" },
+        { "text": "join" },
+        { "text": "boy" },
+        { "text": "toy" },
+        { "text": "saw" },
+        { "text": "paw" },
+        { "text": "high" },
+        { "text": "light" },
+        { "text": "night" }
+      ]
+    },
+    {
+      "id": "deck-8",
+      "label": "Deck 8",
+      "color": "#E07A5F",
+      "back_text": "Deck 8",
+      "cards": [
+        { "text": "march" },
+        { "text": "chart" },
+        { "text": "sharp" },
+        { "text": "chore" },
+        { "text": "short" },
+        { "text": "birth" },
+        { "text": "third" },
+        { "text": "nurse" },
+        { "text": "church" },
+        { "text": "broom" },
+        { "text": "spoon" },
+        { "text": "crowd" },
+        { "text": "flower" },
+        { "text": "house" },
+        { "text": "shout" },
+        { "text": "choice" },
+        { "text": "boil" },
+        { "text": "enjoy" },
+        { "text": "royal" },
+        { "text": "crawl" },
+        { "text": "fought" },
+        { "text": "caught" },
+        { "text": "flight" },
+        { "text": "bright" },
+        { "text": "nightly" }
       ]
     }
   ]
