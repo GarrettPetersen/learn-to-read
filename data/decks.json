@@ -1,0 +1,166 @@
+{
+  "card": {
+    "trim_width_in": 2.5,
+    "trim_height_in": 3.5,
+    "bleed_in": 0.125,
+    "dpi": 300,
+    "background": "#FFFFFF",
+    "text_color": "#111111"
+  },
+  "page": {
+    "width_in": 8.5,
+    "height_in": 11,
+    "dpi": 300,
+    "rows": 3,
+    "cols": 3,
+    "margin_in": 0.25,
+    "gutter_in": 0.0
+  },
+  "font": {
+    "path": "Lexend/static/Lexend-Bold.ttf"
+  },
+  "decks": [
+    {
+      "id": "deck-1",
+      "label": "Deck 1",
+      "color": "#2E86AB",
+      "back_text": "Deck 1",
+      "cards": [
+        { "text": "m" },
+        { "text": "s" },
+        { "text": "a" },
+        { "text": "t" },
+        { "text": "r" },
+        { "text": "n" }
+      ]
+    },
+    {
+      "id": "deck-2",
+      "label": "Deck 2",
+      "color": "#E27D60",
+      "back_text": "Deck 2",
+      "cards": [
+        { "text": "f" },
+        { "text": "o" },
+        { "text": "l" },
+        { "text": "w" },
+        { "text": "i" },
+        { "text": "j" }
+      ]
+    },
+    {
+      "id": "deck-3",
+      "label": "Deck 3",
+      "color": "#9B59B6",
+      "back_text": "Deck 3",
+      "cards": [
+        { "text": "mat" },
+        { "text": "sat" },
+        { "text": "sam" },
+        { "text": "rat" },
+        { "text": "ram" },
+        { "text": "fan" },
+        { "text": "tan" },
+        { "text": "ran" },
+        { "text": "man" },
+        { "text": "fat" },
+        { "text": "slam" },
+        { "text": "tram" }
+      ]
+    },
+    {
+      "id": "deck-4",
+      "label": "Deck 4",
+      "color": "#7FB069",
+      "back_text": "Deck 4",
+      "cards": [
+        { "text": "h" },
+        { "text": "e" },
+        { "text": "b" },
+        { "text": "k" },
+        { "text": "g" },
+        { "text": "v" },
+        { "text": "p" },
+        { "text": "d" },
+        { "text": "beg" },
+        { "text": "rim" },
+        { "text": "wag" },
+        { "text": "jam" }
+      ]
+    },
+    {
+      "id": "deck-5",
+      "label": "Deck 5",
+      "color": "#D7263D",
+      "back_text": "Deck 5",
+      "cards": [
+        { "text": "sh" },
+        { "text": "ch" },
+        { "text": "th" },
+        { "text": "wh" },
+        { "text": "ng" },
+        {
+          "segments": [
+            { "text": "sh", "color": "#D7263D" },
+            { "text": "ip" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "sh", "color": "#D7263D" },
+            { "text": "op" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "ch", "color": "#D7263D" },
+            { "text": "op" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "ch", "color": "#D7263D" },
+            { "text": "at" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "th", "color": "#D7263D" },
+            { "text": "in" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "th", "color": "#D7263D" },
+            { "text": "at" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "wh", "color": "#D7263D" },
+            { "text": "ip" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "ri" },
+            { "text": "ng", "color": "#D7263D" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "sa" },
+            { "text": "ng", "color": "#D7263D" }
+          ]
+        },
+        {
+          "segments": [
+            { "text": "wi" },
+            { "text": "ng", "color": "#D7263D" }
+          ]
+        }
+      ]
+    }
+  ]
+}
+
