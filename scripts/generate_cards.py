@@ -499,10 +499,11 @@ def generate_deck(
     )
     save_sheet_images_and_pdf(mirrored_back_sheets, print_dir / "back-mirrored", base_name="back-mirrored")
 
-    # Combined alternating PDF: front page 1, back page 1, etc. for easy print submission.
+    # Combined alternating PDFs: normal and mirrored-back for duplex printers that flip along the long edge.
     save_alternating_pdf(front_sheets, back_sheets, print_dir / "front-back", base_name="front-back")
+    save_alternating_pdf(front_sheets, mirrored_back_sheets, print_dir / "front-back-mirrored", base_name="front-back-mirrored")
 
-    return front_paths, back_paths, front_sheets, back_sheets
+    return front_paths, back_paths, front_sheets, back_sheets, mirrored_back_sheets
 
 
 def main() -> None:
@@ -528,14 +529,16 @@ def main() -> None:
     phoneme_colors = config.get("phoneme_colors", {})
     all_front_sheets: List[Image.Image] = []
     all_back_sheets: List[Image.Image] = []
+    all_back_sheets_mirrored: List[Image.Image] = []
     all_card_fronts: List[Path] = []
     all_card_backs: List[Path] = []
     for deck in config["decks"]:
-        front_paths, back_paths, front_sheets, back_sheets = generate_deck(
+        front_paths, back_paths, front_sheets, back_sheets, mirrored_back_sheets = generate_deck(
             deck, card_spec, page_spec, font_path, phoneme_colors, out_root=args.output
         )
         all_front_sheets.extend(front_sheets)
         all_back_sheets.extend(back_sheets)
+        all_back_sheets_mirrored.extend(mirrored_back_sheets)
         all_card_fronts.extend(front_paths)
         all_card_backs.extend(back_paths)
 
@@ -556,9 +559,18 @@ def main() -> None:
             name="back",
             mirrored=False,
         )
+        combined_back_sheets_mirrored = render_sheet(
+            images=all_card_backs,
+            card_size=(card_spec.trim_width_px, card_spec.trim_height_px),
+            page_spec=page_spec,
+            name="back-mirrored",
+            mirrored=True,
+        )
         save_sheet_images_and_pdf(combined_front_sheets, combined_dir / "front", base_name="front")
         save_sheet_images_and_pdf(combined_back_sheets, combined_dir / "back", base_name="back")
         save_alternating_pdf(combined_front_sheets, combined_back_sheets, combined_dir, base_name="all-front-back")
+        save_sheet_images_and_pdf(combined_back_sheets_mirrored, combined_dir / "back-mirrored", base_name="back-mirrored")
+        save_alternating_pdf(combined_front_sheets, combined_back_sheets_mirrored, combined_dir, base_name="all-front-back-mirrored")
     print(f"Generated decks into {args.output.resolve()}")
 
 
